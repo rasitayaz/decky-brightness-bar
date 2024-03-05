@@ -20,11 +20,12 @@ declare global {
   }
 }
 
-const animDuration = 220;
-const displayDuration = 1000;
-
+// -1 means uninitialized, it is to prevent the brightness bar from showing up when the plugin is first loaded
 let currentBrightness = -1;
+
+// helps with keeping the bar visible while repeatedly changing the brightness
 let triggeredAt: number = Date.now();
+
 let brightnessBarVisible = false;
 let displayingToast = false;
 
@@ -32,6 +33,12 @@ function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/**
+ * Used to bring Steam UI to the front.
+ * When playing a game, brightness bar doesn't show up unless the Steam UI is visible.
+ *
+ * @param serverAPI is required to display the toast
+ */
 async function displayInvisibleToast(serverAPI: ServerAPI) {
   if (displayingToast) return;
 
@@ -52,14 +59,25 @@ async function displayInvisibleToast(serverAPI: ServerAPI) {
   displayingToast = false;
 }
 
+/**
+ * Listens to brightness changes and displays the brightness bar.
+ *
+ * @param brightness new brightness level between 0 and 1
+ * @param serverAPI is passed to display the toast
+ */
 async function onBrightnessChange(brightness: number, serverAPI: ServerAPI) {
+  const newBrightness = Math.round(brightness * 100);
+
   if (currentBrightness === -1) {
-    currentBrightness = Math.round(brightness * 100);
+    currentBrightness = newBrightness;
     return;
   }
 
-  currentBrightness = Math.round(brightness * 100);
+  currentBrightness = newBrightness;
   triggeredAt = Date.now();
+
+  const animDuration = 220;
+  const displayDuration = 1000;
 
   if (window.BrightnessBarWindow) {
     await delay(animDuration);
