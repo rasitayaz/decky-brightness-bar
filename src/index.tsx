@@ -2,26 +2,148 @@ import {
   ButtonItem,
   definePlugin,
   DialogButton,
-  Menu,
-  MenuItem,
   Navigation,
   PanelSection,
   PanelSectionRow,
   ServerAPI,
-  showContextMenu,
   staticClasses,
 } from "decky-frontend-lib";
 import { VFC } from "react";
-import { FaShip } from "react-icons/fa";
+import { FaSun } from "react-icons/fa";
 
 import logo from "../assets/logo.png";
+import { getBrightnessBarHTML } from "./lib/brightness_bar";
 
-// interface AddMethodArgs {
-//   left: number;
-//   right: number;
-// }
+declare global {
+  interface Window {
+    BrightnessBarWindow: Window | undefined;
+  }
+}
 
-const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
+const animDuration = 220;
+const displayDuration = 1000;
+
+let currentBrightness = -1;
+let triggeredAt: number = Date.now();
+let brightnessBarVisible = false;
+let displayingToast = false;
+
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function displayInvisibleToast(serverAPI: ServerAPI) {
+  if (displayingToast) return;
+
+  displayingToast = true;
+
+  while (brightnessBarVisible) {
+    serverAPI.toaster.toast({
+      title: "",
+      body: "",
+      sound: -1,
+      duration: 1,
+      className: "DialogDraggable DraggedOut",
+    });
+
+    await delay(1600);
+  }
+
+  displayingToast = false;
+}
+
+async function onBrightnessChange(brightness: number, serverAPI: ServerAPI) {
+  if (currentBrightness === -1) {
+    currentBrightness = Math.round(brightness * 100);
+    return;
+  }
+
+  currentBrightness = Math.round(brightness * 100);
+  triggeredAt = Date.now();
+
+  if (window.BrightnessBarWindow) {
+    await delay(animDuration);
+
+    if (window.BrightnessBarWindow) {
+      if (!brightnessBarVisible) {
+        window.BrightnessBarWindow.close();
+      } else {
+        if (brightnessBarVisible) {
+          const win = window.BrightnessBarWindow;
+
+          win.document.body.innerHTML = getBrightnessBarHTML({
+            brightness: currentBrightness,
+            animate: false,
+          });
+        }
+
+        return;
+      }
+    }
+  }
+
+  const { browserView: view, strCreateURL: url } =
+    window.SteamClient.BrowserView.CreatePopup({
+      parentPopupBrowserID: 2,
+    });
+
+  view.SetVisible(false);
+  view.SetName("BrightnessBar");
+  // view.SetBounds(-8, -8, 870, 550); entire screen?
+  view.SetBounds(-8, -8, 300, 64);
+
+  const win = window.open(
+    url,
+    undefined,
+    "status=0,toolbar=0,menubar=0,location=0"
+  );
+
+  if (!win) return;
+
+  window.BrightnessBarWindow = win;
+
+  win.document.title = "BrightnessBar";
+
+  // show the brightness bar with animation
+  win.document.body.innerHTML = getBrightnessBarHTML({
+    brightness: currentBrightness,
+    animate: true,
+  });
+
+  brightnessBarVisible = true;
+  displayInvisibleToast(serverAPI);
+
+  view.SetVisible(true);
+
+  await delay(animDuration);
+
+  // update the brightness without animation
+  win.document.body.innerHTML = getBrightnessBarHTML({
+    brightness: currentBrightness,
+    animate: false,
+  });
+
+  await delay(displayDuration);
+
+  while (Date.now() - triggeredAt < displayDuration) {
+    await delay(displayDuration);
+  }
+
+  // hide the brightness bar with animation
+  win.document.body.innerHTML = getBrightnessBarHTML({
+    brightness: currentBrightness,
+    animate: true,
+    reverse: true,
+  });
+
+  await delay(animDuration);
+  brightnessBarVisible = false;
+
+  win.close();
+  window.BrightnessBarWindow = undefined;
+}
+
+const Content: VFC<{ serverAPI: ServerAPI }> = ({ serverAPI }) => {
   // const [result, setResult] = useState<number | undefined>();
 
   // const onClick = async () => {
@@ -42,18 +164,30 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
       <PanelSectionRow>
         <ButtonItem
           layout="below"
-          onClick={(e) =>
-            showContextMenu(
+          onClick={async () => {
+            const response = await serverAPI.callPluginMethod(
+              "get_brightness_level",
+              {}
+            );
+
+            serverAPI.toaster.toast({
+              title: "brightness",
+              body: response.result,
+              critical: true,
+              duration: 1000,
+            });
+
+            /* showContextMenu(
               <Menu label="Menu" cancelText="CAAAANCEL" onCancel={() => {}}>
                 <MenuItem onSelected={() => {}}>Item #1</MenuItem>
                 <MenuItem onSelected={() => {}}>Item #2</MenuItem>
                 <MenuItem onSelected={() => {}}>Item #3</MenuItem>
               </Menu>,
               e.currentTarget ?? window
-            )
-          }
+            ); */
+          }}
         >
-          Server says yolo
+          Server says yo
         </ButtonItem>
       </PanelSectionRow>
 
@@ -89,17 +223,23 @@ const DeckyPluginRouterTest: VFC = () => {
   );
 };
 
-export default definePlugin((serverApi: ServerAPI) => {
-  serverApi.routerHook.addRoute("/decky-plugin-test", DeckyPluginRouterTest, {
+export default definePlugin((serverAPI: ServerAPI) => {
+  serverAPI.routerHook.addRoute("/decky-plugin-test", DeckyPluginRouterTest, {
     exact: true,
   });
 
+  const brightnessRegistration =
+    window.SteamClient.System.Display.RegisterForBrightnessChanges(
+      (data: any) => onBrightnessChange(data.flBrightness, serverAPI)
+    );
+
   return {
-    title: <div className={staticClasses.Title}>Example Plugin</div>,
-    content: <Content serverAPI={serverApi} />,
-    icon: <FaShip />,
+    title: <div className={staticClasses.Title}>Brightness Bar</div>,
+    content: <Content serverAPI={serverAPI} />,
+    icon: <FaSun />,
     onDismount() {
-      serverApi.routerHook.removeRoute("/decky-plugin-test");
+      serverAPI.routerHook.removeRoute("/decky-plugin-test");
+      brightnessRegistration.unregister();
     },
   };
 });
