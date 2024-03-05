@@ -4,7 +4,7 @@
   "flags": ["debug", "_root"],
   "publish": {
     "tags": ["template", "root"],
-    "description": "Decky example plugin.",
+    "description": "Displays a brightness bar when the brightness is changed.",
     "image": "https://opengraph.githubassets.com/1/SteamDeckHomebrew/PluginLoader"
   }
 }
