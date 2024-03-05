@@ -5,27 +5,15 @@ export function getBrightnessBarHTML(props: {
 }) {
   const animation = props.animate
     ? props.reverse
-      ? `@keyframes brightness_bar_anim {
-          from {
-            transform: translateY(0);
-          }
-          to {
-            transform: translateY(-150%);
-          }
-        }`
-      : `@keyframes brightness_bar_anim {
-          from {
-            transform: translateY(-150%);
-          }
-          to {
-            transform: translateY(0);
-          }
-        }`
+      ? "from { transform: translateY(0) } to { transform: translateY(-150%) }"
+      : "from { transform: translateY(-150%) } to { transform: translateY(0) }"
     : "";
 
   return `
     <style>
-      ${animation}
+      @keyframes brightness_bar_anim {
+        ${animation}
+      }
 
       .brightness_bar_container {
         background: #23262e;
