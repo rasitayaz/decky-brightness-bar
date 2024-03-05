@@ -1,3 +1,8 @@
+/**
+ * This module is no longer used in the project,
+ * it is kept here for reference purposes.
+ */
+
 export enum ULButtons {
   R2 = 0,
   L2 = 1,
