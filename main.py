@@ -5,6 +5,15 @@ import os
 # or add the `decky-loader/plugin` path to `python.analysis.extraPaths` in `.vscode/settings.json`
 import decky_plugin
 
+from settings import SettingsManager
+
+
+# Get environment variable
+settingsDir = os.environ["DECKY_PLUGIN_SETTINGS_DIR"]
+
+settings = SettingsManager(name="settings", settings_directory=settingsDir)
+settings.read()
+
 
 class Plugin:
     # Asyncio-compatible long-running code, executed in a task when the plugin is loaded
@@ -44,3 +53,19 @@ class Plugin:
                 decky_plugin.DECKY_USER_HOME, ".local", "share", "decky-template"
             ),
         )
+
+    async def settings_read(self):
+        decky_plugin.logger.info("Reading settings")
+        return settings.read()
+
+    async def settings_commit(self):
+        decky_plugin.logger.info("Saving settings")
+        return settings.commit()
+
+    async def settings_get(self, key: str, defaults):
+        decky_plugin.logger.info("Get {}".format(key))
+        return settings.getSetting(key, defaults)
+
+    async def settings_set(self, key: str, value):
+        decky_plugin.logger.info("Set {}: {}".format(key, value))
+        return settings.setSetting(key, value)
