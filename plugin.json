@@ -1,10 +1,10 @@
 {
   "name": "Brightness Bar",
   "author": "rasitayaz",
-  "flags": ["debug"],
+  "flags": [],
   "publish": {
     "tags": ["brightness", "display"],
     "description": "Displays a brightness bar when the brightness is changed with 'STEAM/QAM + LS up/down' shortcuts.",
-    "image": "https://opengraph.githubassets.com/1/SteamDeckHomebrew/PluginLoader"
+    "image": "https://opengraph.githubassets.com/1/rasitayaz/decky-brightness-bar"
   }
 }
