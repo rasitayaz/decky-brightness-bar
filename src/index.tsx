@@ -10,6 +10,7 @@ import { FaSun } from "react-icons/fa";
 
 import { Logic } from "./lib/logic";
 import { QAMContent } from "./lib/qam_content";
+import { Settings } from "./lib/settings";
 
 const DeckyPluginRouterTest: VFC = () => {
   return (
@@ -27,20 +28,27 @@ export default definePlugin((serverAPI: ServerAPI) => {
     exact: true,
   });
 
-  const logic = new Logic(serverAPI);
+  const settings = new Settings(serverAPI);
+  const logic = new Logic(serverAPI, settings);
 
   const brightnessRegistration =
-    window.SteamClient.System.Display.RegisterForBrightnessChanges(
-      (data: any) => logic.onBrightnessChange(data)
+    window.SteamClient.System.Display.RegisterForBrightnessChanges((val: any) =>
+      logic.onBrightnessChange(val)
+    );
+
+  const inputRegistration =
+    window.SteamClient.Input.RegisterForControllerStateChanges((val: any) =>
+      logic.onControllerStateChange(val)
     );
 
   return {
     title: <div className={staticClasses.Title}>Brightness Bar</div>,
-    content: <QAMContent serverAPI={serverAPI} />,
+    content: <QAMContent serverAPI={serverAPI} settings={settings} />,
     icon: <FaSun />,
     onDismount() {
       serverAPI.routerHook.removeRoute("/decky-plugin-test");
       brightnessRegistration.unregister();
+      inputRegistration.unregister();
     },
   };
 });

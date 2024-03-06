@@ -1,5 +1,7 @@
 import { ServerAPI } from "decky-frontend-lib";
 import { getBrightnessBarHTML } from "./brightness_bar";
+import { ULButtons, ULUpperButtons, isPressed } from "./buttons";
+import { Settings } from "./settings";
 
 declare global {
   interface Window {
@@ -9,18 +11,18 @@ declare global {
 
 export class Logic {
   serverAPI: ServerAPI;
+  settings: Settings;
 
-  // -1 means uninitialized, it is to prevent the brightness bar from showing up when the plugin is first loaded
-  currentBrightness = -1;
-
-  // helps with keeping the bar visible while repeatedly changing the brightness
+  currentBrightness = 0;
   triggeredAt: number = Date.now();
 
+  qamOrSteamButtonPressed = false;
   brightnessBarVisible = false;
   displayingToast = false;
 
-  constructor(serverAPI: ServerAPI) {
+  constructor(serverAPI: ServerAPI, settings: Settings) {
     this.serverAPI = serverAPI;
+    this.settings = settings;
   }
 
   delay(ms: number) {
@@ -30,10 +32,8 @@ export class Logic {
   /**
    * Used to bring Steam UI to the front.
    * When playing a game, brightness bar doesn't show up unless the Steam UI is visible.
-   *
-   * @param this.serverAPI is required to display the toast
    */
-  async displayInvisibleToast() {
+  async showInvisibleToast() {
     if (this.displayingToast) return;
 
     this.displayingToast = true;
@@ -54,20 +54,25 @@ export class Logic {
   }
 
   /**
-   * Listens to brightness changes and displays the brightness bar.
-   *
-   * @param brightness new brightness level between 0 and 1
-   * @param this.serverAPI is passed to display the toast
+   * Listens to controller state changes and sets the `qamOrSteamButtonPressed` flag.
+   */
+  onControllerStateChange(changes: any[]) {
+    for (const inputs of changes) {
+      this.qamOrSteamButtonPressed =
+        isPressed(ULUpperButtons.QAM, inputs.ulUpperButtons) ||
+        isPressed(ULButtons.STEAM, inputs.ulButtons);
+    }
+  }
+
+  /**
+   * Listens to brightness changes and displays the brightness bar
+   * if the QAM or Steam button is pressed.
    */
   async onBrightnessChange(data: { flBrightness: number }) {
-    const newBrightness = Math.round(data.flBrightness * 100);
+    // 'tis to prevent the brightness bar from showing up when the brightness automatically changes
+    if (!this.qamOrSteamButtonPressed) return;
 
-    if (this.currentBrightness === -1) {
-      this.currentBrightness = newBrightness;
-      return;
-    }
-
-    this.currentBrightness = newBrightness;
+    this.currentBrightness = Math.round(data.flBrightness * 100);
     this.triggeredAt = Date.now();
 
     const animDuration = 220;
@@ -83,7 +88,8 @@ export class Logic {
           if (this.brightnessBarVisible) {
             const win = window.BrightnessBarWindow;
 
-            win.document.body.innerHTML = getBrightnessBarHTML({
+            win.document.body.innerHTML = await getBrightnessBarHTML({
+              settings: this.settings,
               brightness: this.currentBrightness,
               animate: false,
             });
@@ -117,20 +123,22 @@ export class Logic {
     win.document.title = "BrightnessBar";
 
     // show the brightness bar with animation
-    win.document.body.innerHTML = getBrightnessBarHTML({
+    win.document.body.innerHTML = await getBrightnessBarHTML({
+      settings: this.settings,
       brightness: this.currentBrightness,
       animate: true,
     });
 
     this.brightnessBarVisible = true;
-    this.displayInvisibleToast();
+    this.showInvisibleToast();
 
     view.SetVisible(true);
 
     await this.delay(animDuration);
 
     // update the brightness without animation
-    win.document.body.innerHTML = getBrightnessBarHTML({
+    win.document.body.innerHTML = await getBrightnessBarHTML({
+      settings: this.settings,
       brightness: this.currentBrightness,
       animate: false,
     });
@@ -142,7 +150,8 @@ export class Logic {
     }
 
     // hide the brightness bar with animation
-    win.document.body.innerHTML = getBrightnessBarHTML({
+    win.document.body.innerHTML = await getBrightnessBarHTML({
+      settings: this.settings,
       brightness: this.currentBrightness,
       animate: true,
       reverse: true,

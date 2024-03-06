@@ -1,8 +1,27 @@
-export function getBrightnessBarHTML(props: {
+import { Setting, Settings } from "./settings";
+
+export async function getBrightnessBarHTML(props: {
+  settings: Settings;
   brightness: number;
   animate: boolean;
   reverse?: boolean;
 }) {
+  const [
+    barColor,
+    emptyBarColor,
+    containerColor,
+    iconColor,
+    containerRadius,
+    containerShadow,
+  ] = await Promise.all([
+    props.settings.load(Setting.BarColor),
+    props.settings.load(Setting.EmptyBarColor),
+    props.settings.load(Setting.ContainerColor),
+    props.settings.load(Setting.IconColor),
+    props.settings.load(Setting.ContainerRadius),
+    props.settings.load(Setting.ContainerShadow),
+  ]);
+
   const animation = props.animate
     ? props.reverse
       ? "from { transform: translateY(0) } to { transform: translateY(-150%) }"
@@ -16,9 +35,12 @@ export function getBrightnessBarHTML(props: {
       }
 
       .brightness_bar_container {
-        background: #23262e;
-        color: white;
-        box-shadow: 0px 0px 10px rgb(0 0 0 / 50%);
+        background: ${containerColor};
+        color: ${iconColor};
+        box-shadow: ${
+          containerShadow ? "0px 0px 10px rgb(0 0 0 / 50%)" : "none"
+        };
+        border-radius: ${containerRadius};
         width: 236px;
         position: absolute;
         top: 8px;
@@ -42,7 +64,7 @@ export function getBrightnessBarHTML(props: {
       .brightness_bar {
         flex-grow: 1;
         height: 6px;
-        background-color: black;
+        background-color: ${emptyBarColor};
         border-radius: 3px;
       }
 
@@ -50,7 +72,7 @@ export function getBrightnessBarHTML(props: {
         display: block;
         height: 100%;
         width: ${props.brightness}%;
-        background-color: #1a9fff;
+        background-color: ${barColor};
         border-radius: 3px;
       }
     </style>

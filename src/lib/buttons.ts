@@ -1,7 +1,15 @@
-/**
- * This module is no longer used in the project,
- * it is kept here for reference purposes.
- */
+// example usage:
+
+/* async function onControllerStateChange(changes: any[]) {
+  for (const inputs of changes) {
+    if (
+      isPressed(ULUpperButtons.QAM, inputs.ulUpperButtons) &&
+      isPressed(ULButtons.STEAM, inputs.ulButtons)
+    ) {
+      console.log("QAM and Steam buttons are pressed");
+    }
+  }
+} */
 
 export enum ULButtons {
   R2 = 0,
@@ -37,27 +45,5 @@ export function isPressed(
   buttonId: ULButtons | ULUpperButtons,
   buttons: number
 ) {
-  return buttons && buttons & (1 << buttonId);
+  return buttons && buttons & (1 << buttonId) ? true : false;
 }
-
-// example usage:
-
-/* let triggeredAt: number = Date.now();
-
-async function onControllerStateChange(val: any[], serverAPI: ServerAPI) {
-  for (const inputs of val) {
-    if (Date.now() - triggeredAt < 200) {
-      continue;
-    }
-
-    if (
-      isPressed(ULUpperButtons.QAM, inputs.ulUpperButtons) ||
-      isPressed(ULButtons.STEAM, inputs.ulButtons)
-    ) {
-      if (inputs.sLeftStickY > 16000 || inputs.sLeftStickY < -16000) {
-        triggeredAt = Date.now();
-        console.log("brightness change");
-      }
-    }
-  }
-} */

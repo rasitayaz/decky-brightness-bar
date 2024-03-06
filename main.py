@@ -54,18 +54,10 @@ class Plugin:
             ),
         )
 
-    async def settings_read(self):
-        decky_plugin.logger.info("Reading settings")
-        return settings.read()
-
-    async def settings_commit(self):
-        decky_plugin.logger.info("Saving settings")
-        return settings.commit()
-
-    async def settings_get(self, key: str, defaults):
+    async def settings_load(self, key: str, defaults):
         decky_plugin.logger.info("Get {}".format(key))
         return settings.getSetting(key, defaults)
 
-    async def settings_set(self, key: str, value):
+    async def settings_save(self, key: str, value):
         decky_plugin.logger.info("Set {}: {}".format(key, value))
         return settings.setSetting(key, value)
