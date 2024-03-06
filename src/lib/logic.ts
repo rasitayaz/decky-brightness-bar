@@ -60,7 +60,7 @@ export class Logic {
     for (const inputs of changes) {
       this.qamOrSteamButtonPressed =
         isPressed(ULUpperButtons.QAM, inputs.ulUpperButtons) ||
-        isPressed(ULButtons.STEAM, inputs.ulButtons);
+        isPressed(ULButtons.Steam, inputs.ulButtons);
     }
   }
 

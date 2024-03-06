@@ -4,7 +4,7 @@
   for (const inputs of changes) {
     if (
       isPressed(ULUpperButtons.QAM, inputs.ulUpperButtons) &&
-      isPressed(ULButtons.STEAM, inputs.ulButtons)
+      isPressed(ULButtons.Steam, inputs.ulButtons)
     ) {
       console.log("QAM and Steam buttons are pressed");
     }
@@ -20,24 +20,26 @@ export enum ULButtons {
   B = 5,
   X = 6,
   A = 7,
-  UP = 8,
-  RIGHT = 9,
-  LEFT = 10,
-  DOWN = 11,
-  SELECT = 12,
-  STEAM = 13,
-  START = 14,
+  Up = 8,
+  Right = 9,
+  Left = 10,
+  Down = 11,
+  Select = 12,
+  Steam = 13,
+  Start = 14,
   L5 = 15,
   R5 = 16,
-  L3 = 22,
-  R3 = 26,
+  LeftTrackpadTouch = 19,
+  RightTrackpadTouch = 20,
+  LSClick = 22,
+  RSClick = 26,
 }
 
 export enum ULUpperButtons {
   L4 = 9,
   R4 = 10,
-  L3 = 14,
-  R3 = 15,
+  LSTouch = 14,
+  RSTouch = 15,
   QAM = 18,
 }
 
