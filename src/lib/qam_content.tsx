@@ -23,6 +23,7 @@ const ColorPickerRow: VFC<{
   return (
     <PanelSectionRow>
       <ButtonItem
+        bottomSeparator="none"
         onClick={() =>
           showModal(
             <ColorPickerModal
@@ -119,6 +120,7 @@ export const QAMContent: VFC<{ serverAPI: ServerAPI; settings: Settings }> = ({
 
       <PanelSectionRow>
         <SliderField
+          bottomSeparator="none"
           label={"Container Radius"}
           min={0}
           max={containerRadiusOptions.length - 1}
@@ -139,6 +141,7 @@ export const QAMContent: VFC<{ serverAPI: ServerAPI; settings: Settings }> = ({
 
       <PanelSectionRow>
         <ToggleField
+          bottomSeparator="none"
           label={"Container Shadow"}
           checked={containerShadow}
           onChange={(value) => {
@@ -150,6 +153,7 @@ export const QAMContent: VFC<{ serverAPI: ServerAPI; settings: Settings }> = ({
 
       <PanelSectionRow>
         <ButtonItem
+          bottomSeparator="none"
           layout="below"
           onClick={() => {
             console.log("Reset to Defaults");
