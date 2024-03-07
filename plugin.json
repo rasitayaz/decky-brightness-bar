@@ -5,6 +5,6 @@
   "publish": {
     "tags": ["brightness", "display"],
     "description": "Displays a customizable brightness bar when the brightness is changed with 'STEAM/QAM + LS up/down' shortcuts.",
-    "image": "https://opengraph.githubassets.com/1/rasitayaz/decky-brightness-bar"
+    "image": "https://raw.githubusercontent.com/rasitayaz/decky-brightness-bar/main/preview.jpg"
   }
 }
