@@ -1,3 +1,4 @@
+import Color from "color";
 import {
   ButtonItem,
   ColorPickerModal,
@@ -8,8 +9,6 @@ import {
   showModal,
 } from "decky-frontend-lib";
 import { VFC, useEffect, useState } from "react";
-
-import Color from "color";
 import { appContext } from "../utils/context";
 import { Setting } from "../utils/settings";
 
@@ -83,10 +82,10 @@ export const QAMContent: VFC = () => {
             setContainerRadius(newRadius);
           }}
           notchCount={containerRadiusOptions.length}
-          notchLabels={containerRadiusOptions.map((e, i) => ({
-            notchIndex: i,
-            label: e,
-            value: i,
+          notchLabels={containerRadiusOptions.map((option, index) => ({
+            notchIndex: index,
+            label: option,
+            value: index,
           }))}
         />
       </PanelSectionRow>

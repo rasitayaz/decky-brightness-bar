@@ -4,8 +4,8 @@ import { Settings } from "./settings";
 export let appContext: AppContext;
 
 export class AppContext {
-  serverAPI: ServerAPI;
-  settings: Settings;
+  readonly serverAPI: ServerAPI;
+  readonly settings: Settings;
 
   constructor(serverAPI: ServerAPI) {
     this.serverAPI = serverAPI;
