@@ -10,11 +10,11 @@ import {
 import { VFC, useEffect, useState } from "react";
 
 import Color from "color";
-import { context } from "./context";
-import { Setting } from "./settings";
+import { appContext } from "../utils/context";
+import { Setting } from "../utils/settings";
 
 export const QAMContent: VFC = () => {
-  const { settings } = context;
+  const { settings } = appContext;
 
   const [barColor, setBarColor] = useState<string>(settings.defaults.barColor);
   const [emptyBarColor, setEmptyBarColor] = useState<string>(

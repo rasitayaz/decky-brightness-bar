@@ -1,8 +1,8 @@
 import { findModuleChild } from "decky-frontend-lib";
 import { VFC, useEffect, useState } from "react";
-import { ULButtons, ULUpperButtons, isPressed } from "./buttons";
-import { context } from "./context";
-import { Setting } from "./settings";
+import { ULButtons, ULUpperButtons, isPressed } from "../utils/buttons";
+import { appContext } from "../utils/context";
+import { Setting } from "../utils/settings";
 
 enum UIComposition {
   Hidden = 0,
@@ -12,29 +12,29 @@ enum UIComposition {
   OverlayKeyboard = 4,
 }
 
-const useUIComposition = findModuleChild((m) => {
-  if (typeof m !== "object") return undefined;
-  for (let prop in m) {
-    if (
-      typeof m[prop] === "function" &&
-      m[prop].toString().includes("AddMinimumCompositionStateRequest") &&
-      m[prop].toString().includes("ChangeMinimumCompositionStateRequest") &&
-      m[prop].toString().includes("RemoveMinimumCompositionStateRequest") &&
-      !m[prop].toString().includes("m_mapCompositionStateRequests")
-    ) {
-      return m[prop];
+const useUIComposition: (composition: UIComposition) => void = findModuleChild(
+  (m) => {
+    if (typeof m !== "object") return undefined;
+    for (let prop in m) {
+      if (
+        typeof m[prop] === "function" &&
+        m[prop].toString().includes("AddMinimumCompositionStateRequest") &&
+        m[prop].toString().includes("ChangeMinimumCompositionStateRequest") &&
+        m[prop].toString().includes("RemoveMinimumCompositionStateRequest") &&
+        !m[prop].toString().includes("m_mapCompositionStateRequests")
+      ) {
+        return m[prop];
+      }
     }
   }
-});
+);
 
 let triggeredAt = 0;
 let qamOrSteamButtonPressed = false;
 let brightnessLock = false;
 
 export const BrightnessBar: VFC = () => {
-  console.log("BrightnessBar");
-
-  const { settings } = context;
+  const { settings } = appContext;
 
   useUIComposition(UIComposition.Notification);
 
@@ -55,17 +55,22 @@ export const BrightnessBar: VFC = () => {
     settings.defaults.containerShadow
   );
 
-  function loadSettings() {
-    settings.load(Setting.BarColor).then(setBarColor);
-    settings.load(Setting.EmptyBarColor).then(setEmptyBarColor);
-    settings.load(Setting.ContainerColor).then(setContainerColor);
-    settings.load(Setting.IconColor).then(setIconColor);
-    settings.load(Setting.ContainerRadius).then(setContainerRadius);
-    settings.load(Setting.ContainerShadow).then(setContainerShadow);
-  }
-
   useEffect(() => {
+    function loadSettings() {
+      settings.load(Setting.BarColor).then(setBarColor);
+      settings.load(Setting.EmptyBarColor).then(setEmptyBarColor);
+      settings.load(Setting.ContainerColor).then(setContainerColor);
+      settings.load(Setting.IconColor).then(setIconColor);
+      settings.load(Setting.ContainerRadius).then(setContainerRadius);
+      settings.load(Setting.ContainerShadow).then(setContainerShadow);
+    }
+
     loadSettings();
+    settings.subscribe("BrightnessBar", loadSettings);
+
+    return () => {
+      settings.unsubscribe("BrightnessBar");
+    };
   }, []);
 
   useEffect(() => {
@@ -92,11 +97,6 @@ export const BrightnessBar: VFC = () => {
     const registration =
       window.SteamClient.System.Display.RegisterForBrightnessChanges(
         async (data: { flBrightness: number }) => {
-          if (settings.isUpdated) {
-            loadSettings();
-            settings.isUpdated = false;
-          }
-
           triggeredAt = Date.now();
           setBrightnessPercentage(Math.round(data.flBrightness * 100));
 

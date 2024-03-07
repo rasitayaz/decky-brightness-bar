@@ -1,7 +1,7 @@
 import { ServerAPI } from "decky-frontend-lib";
 import { Settings } from "./settings";
 
-export let context: AppContext;
+export let appContext: AppContext;
 
 export class AppContext {
   serverAPI: ServerAPI;
@@ -13,6 +13,6 @@ export class AppContext {
   }
 
   static init(serverAPI: ServerAPI) {
-    context = new AppContext(serverAPI);
+    appContext = new AppContext(serverAPI);
   }
 }

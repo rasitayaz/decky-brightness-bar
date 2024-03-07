@@ -10,13 +10,14 @@ export enum Setting {
 }
 
 export class Settings {
-  serverAPI: ServerAPI;
+  private readonly serverAPI: ServerAPI;
 
   constructor(serverAPI: ServerAPI) {
     this.serverAPI = serverAPI;
   }
 
-  isUpdated = false;
+  private cache: Partial<Record<Setting, any>> = {};
+  private subscribers: Map<string, () => void> = new Map();
 
   defaults: Record<Setting, any> = {
     barColor: "#1a9fff",
@@ -27,7 +28,19 @@ export class Settings {
     containerShadow: true,
   };
 
-  cache: Partial<Record<Setting, any>> = {};
+  subscribe(id: string, callback: () => void): void {
+    this.subscribers.set(id, callback);
+  }
+
+  unsubscribe(id: string): void {
+    this.subscribers.delete(id);
+  }
+
+  notifySubscribers() {
+    for (const callback of this.subscribers.values()) {
+      callback();
+    }
+  }
 
   async load(key: Setting) {
     if (this.cache[key]) {
@@ -48,7 +61,7 @@ export class Settings {
 
   async save(key: Setting, value: any) {
     this.cache[key] = value;
-    this.isUpdated = true;
+    this.notifySubscribers();
 
     await this.serverAPI.callPluginMethod("settings_save", {
       key: key,
@@ -58,7 +71,7 @@ export class Settings {
 
   resetToDefaults() {
     this.cache = { ...this.defaults };
-    this.isUpdated = true;
+    this.notifySubscribers();
 
     for (const key of Object.values(Setting)) {
       this.serverAPI.callPluginMethod("settings_save", {

@@ -1,9 +1,9 @@
 import { definePlugin, ServerAPI, staticClasses } from "decky-frontend-lib";
 import { FaSun } from "react-icons/fa";
 
-import { BrightnessBar } from "./lib/brightness_bar";
-import { AppContext } from "./lib/context";
-import { QAMContent } from "./lib/qam_content";
+import { BrightnessBar } from "./lib/components/brightness_bar";
+import { AppContext } from "./lib/utils/context";
+import { QAMContent } from "./lib/components/qam_content";
 
 export default definePlugin((serverAPI: ServerAPI) => {
   AppContext.init(serverAPI);
