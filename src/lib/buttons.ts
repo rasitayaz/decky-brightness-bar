@@ -1,16 +1,3 @@
-// example usage:
-
-/* async function onControllerStateChange(changes: any[]) {
-  for (const inputs of changes) {
-    if (
-      isPressed(ULUpperButtons.QAM, inputs.ulUpperButtons) &&
-      isPressed(ULButtons.Steam, inputs.ulButtons)
-    ) {
-      console.log("QAM and Steam buttons are pressed");
-    }
-  }
-} */
-
 export enum ULButtons {
   R2 = 0,
   L2 = 1,

@@ -3,7 +3,6 @@ import {
   ColorPickerModal,
   PanelSection,
   PanelSectionRow,
-  ServerAPI,
   SliderField,
   ToggleField,
   showModal,
@@ -11,59 +10,12 @@ import {
 import { VFC, useEffect, useState } from "react";
 
 import Color from "color";
-import { Setting, Settings } from "./settings";
+import { context } from "./context";
+import { Setting } from "./settings";
 
-const ColorPickerRow: VFC<{
-  title: string;
-  color: string;
-  onSave: (color: string) => void;
-}> = ({ title, color, onSave }) => {
-  const hslArray = Color(color).hsl().array();
+export const QAMContent: VFC = () => {
+  const { settings } = context;
 
-  return (
-    <PanelSectionRow>
-      <ButtonItem
-        bottomSeparator="none"
-        onClick={() =>
-          showModal(
-            <ColorPickerModal
-              onConfirm={(HSLString) => {
-                onSave(Color(HSLString).hexa());
-              }}
-              defaultH={hslArray[0]}
-              defaultS={hslArray[1]}
-              defaultL={hslArray[2]}
-              defaultA={hslArray[3] ?? 1}
-              title={title}
-              closeModal={() => {}}
-            />
-          )
-        }
-        layout={"below"}
-      >
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <span>{title}</span>
-          <div
-            style={{
-              marginLeft: "auto",
-              width: "20px",
-              height: "20px",
-              backgroundColor: color,
-              border: "2px solid #000",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          />
-        </div>
-      </ButtonItem>
-    </PanelSectionRow>
-  );
-};
-
-export const QAMContent: VFC<{ serverAPI: ServerAPI; settings: Settings }> = ({
-  settings,
-}) => {
   const [barColor, setBarColor] = useState<string>(settings.defaults.barColor);
   const [emptyBarColor, setEmptyBarColor] = useState<string>(
     settings.defaults.emptyBarColor
@@ -156,7 +108,6 @@ export const QAMContent: VFC<{ serverAPI: ServerAPI; settings: Settings }> = ({
           bottomSeparator="none"
           layout="below"
           onClick={() => {
-            console.log("Reset to Defaults");
             settings.resetToDefaults();
             setBarColor(settings.defaults.barColor);
             setEmptyBarColor(settings.defaults.emptyBarColor);
@@ -170,5 +121,53 @@ export const QAMContent: VFC<{ serverAPI: ServerAPI; settings: Settings }> = ({
         </ButtonItem>
       </PanelSectionRow>
     </PanelSection>
+  );
+};
+
+const ColorPickerRow: VFC<{
+  title: string;
+  color: string;
+  onSave: (color: string) => void;
+}> = ({ title, color, onSave }) => {
+  const hslArray = Color(color).hsl().array();
+
+  return (
+    <PanelSectionRow>
+      <ButtonItem
+        bottomSeparator="none"
+        onClick={() =>
+          showModal(
+            <ColorPickerModal
+              onConfirm={(HSLString) => {
+                onSave(Color(HSLString).hexa());
+              }}
+              defaultH={hslArray[0]}
+              defaultS={hslArray[1]}
+              defaultL={hslArray[2]}
+              defaultA={hslArray[3] ?? 1}
+              title={title}
+              closeModal={() => {}}
+            />
+          )
+        }
+        layout={"below"}
+      >
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <span>{title}</span>
+          <div
+            style={{
+              marginLeft: "auto",
+              width: "20px",
+              height: "20px",
+              backgroundColor: color,
+              border: "2px solid #000",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          />
+        </div>
+      </ButtonItem>
+    </PanelSectionRow>
   );
 };

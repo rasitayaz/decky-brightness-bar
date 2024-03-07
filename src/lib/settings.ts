@@ -16,6 +16,8 @@ export class Settings {
     this.serverAPI = serverAPI;
   }
 
+  isUpdated = false;
+
   defaults: Record<Setting, any> = {
     barColor: "#1a9fff",
     emptyBarColor: "#000000",
@@ -46,6 +48,7 @@ export class Settings {
 
   async save(key: Setting, value: any) {
     this.cache[key] = value;
+    this.isUpdated = true;
 
     await this.serverAPI.callPluginMethod("settings_save", {
       key: key,
@@ -55,6 +58,7 @@ export class Settings {
 
   resetToDefaults() {
     this.cache = { ...this.defaults };
+    this.isUpdated = true;
 
     for (const key of Object.values(Setting)) {
       this.serverAPI.callPluginMethod("settings_save", {
