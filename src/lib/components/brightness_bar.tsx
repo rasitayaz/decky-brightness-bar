@@ -36,8 +36,6 @@ let brightnessLock = false;
 export const BrightnessBar: VFC = () => {
   const { settings } = appContext;
 
-  useUIComposition(UIComposition.Notification);
-
   const [barColor, setBarColor] = useState<string>(settings.defaults.barColor);
   const [emptyBarColor, setEmptyBarColor] = useState<string>(
     settings.defaults.emptyBarColor
@@ -92,6 +90,8 @@ export const BrightnessBar: VFC = () => {
 
   const [brightnessPercentage, setBrightnessPercentage] = useState(0);
   const [visible, setVisible] = useState(false);
+
+  useUIComposition(visible ? UIComposition.Notification : UIComposition.Hidden);
 
   useEffect(() => {
     const registration =
