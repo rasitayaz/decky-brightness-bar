@@ -30,7 +30,7 @@ const useUIComposition: (composition: UIComposition) => void = findModuleChild(
 );
 
 let triggeredAt = 0;
-let qamOrSteamButtonPressed = false;
+let controllingBrightness = false;
 let brightnessLock = false;
 
 export const BrightnessBar: VFC = () => {
@@ -76,9 +76,16 @@ export const BrightnessBar: VFC = () => {
       window.SteamClient.Input.RegisterForControllerStateChanges(
         (changes: any[]) => {
           for (const inputs of changes) {
-            qamOrSteamButtonPressed =
+            const qamOrSteamPressed =
               isPressed(ULUpperButtons.QAM, inputs.ulUpperButtons) ||
               isPressed(ULButtons.Steam, inputs.ulButtons);
+
+            const threshold = 10000;
+
+            const up = inputs.sLeftStickY > threshold;
+            const down = inputs.sLeftStickY < -threshold;
+
+            controllingBrightness = qamOrSteamPressed && (up || down);
           }
         }
       );
@@ -100,7 +107,7 @@ export const BrightnessBar: VFC = () => {
           triggeredAt = Date.now();
           setBrightnessPercentage(Math.round(data.flBrightness * 100));
 
-          if (brightnessLock || !qamOrSteamButtonPressed) return;
+          if (brightnessLock || !controllingBrightness) return;
 
           brightnessLock = true;
 
