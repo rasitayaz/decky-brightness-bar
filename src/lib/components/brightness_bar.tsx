@@ -13,22 +13,29 @@ enum UIComposition {
   OverlayKeyboard = 4,
 }
 
-const useUIComposition: (composition: UIComposition) => void = findModuleChild(
-  (m) => {
-    if (typeof m !== "object") return undefined;
-    for (let prop in m) {
-      if (
-        typeof m[prop] === "function" &&
-        m[prop].toString().includes("AddMinimumCompositionStateRequest") &&
-        m[prop].toString().includes("ChangeMinimumCompositionStateRequest") &&
-        m[prop].toString().includes("RemoveMinimumCompositionStateRequest") &&
-        !m[prop].toString().includes("m_mapCompositionStateRequests")
-      ) {
-        return m[prop];
-      }
+type UseUIComposition = (composition: UIComposition) => {
+  releaseComposition: () => void;
+};
+
+const useUIComposition: UseUIComposition = findModuleChild((m) => {
+  if (typeof m !== "object") return undefined;
+  for (let prop in m) {
+    if (
+      typeof m[prop] === "function" &&
+      m[prop].toString().includes("AddMinimumCompositionStateRequest") &&
+      m[prop].toString().includes("ChangeMinimumCompositionStateRequest") &&
+      m[prop].toString().includes("RemoveMinimumCompositionStateRequest") &&
+      !m[prop].toString().includes("m_mapCompositionStateRequests")
+    ) {
+      return m[prop];
     }
   }
-);
+});
+
+const UICompositionProxy: VFC = () => {
+  useUIComposition(UIComposition.Notification);
+  return null;
+};
 
 let triggeredAt = 0;
 let controllingBrightness = false;
@@ -99,8 +106,6 @@ export const BrightnessBar: VFC = () => {
   const [brightnessPercentage, setBrightnessPercentage] = useState(0);
   const [visible, setVisible] = useState(false);
 
-  useUIComposition(visible ? UIComposition.Notification : UIComposition.Hidden);
-
   useEffect(() => {
     const registration =
       window.SteamClient.System.Display.RegisterForBrightnessChanges(
@@ -160,6 +165,7 @@ export const BrightnessBar: VFC = () => {
         transition: "transform 0.22s cubic-bezier(0, 0.73, 0.48, 1)",
       }}
     >
+      {visible && <UICompositionProxy />}
       <BrightnessIcon size={20} />
       <div
         id="brightness_bar"

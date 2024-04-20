@@ -11,9 +11,10 @@ import {
 import { VFC, useEffect, useState } from "react";
 import { appContext } from "../utils/context";
 import { Setting } from "../utils/settings";
+import { BrightnessBar } from "./brightness_bar";
 
 export const QAMContent: VFC = () => {
-  const { settings } = appContext;
+  const { settings, serverAPI } = appContext;
 
   const [barColor, setBarColor] = useState<string>(settings.defaults.barColor);
   const [emptyBarColor, setEmptyBarColor] = useState<string>(
@@ -44,82 +45,104 @@ export const QAMContent: VFC = () => {
   }, []);
 
   return (
-    <PanelSection title="Customization">
-      <ColorPickerRow
-        title="Bar Color"
-        color={barColor}
-        onSave={(color) => settings.save(Setting.BarColor, color)}
-      />
-
-      <ColorPickerRow
-        title="Empty Bar Color"
-        color={emptyBarColor}
-        onSave={(color) => settings.save(Setting.EmptyBarColor, color)}
-      />
-
-      <ColorPickerRow
-        title="Container Color"
-        color={containerColor}
-        onSave={(color) => settings.save(Setting.ContainerColor, color)}
-      />
-
-      <ColorPickerRow
-        title="Icon Color"
-        color={iconColor}
-        onSave={(color) => settings.save(Setting.IconColor, color)}
-      />
-
-      <PanelSectionRow>
-        <SliderField
-          bottomSeparator="none"
-          label={"Container Radius"}
-          min={0}
-          max={containerRadiusOptions.length - 1}
-          value={containerRadiusOptions.indexOf(containerRadius)}
-          onChange={(value) => {
-            const newRadius = containerRadiusOptions[value];
-            settings.save(Setting.ContainerRadius, newRadius);
-            setContainerRadius(newRadius);
-          }}
-          notchCount={containerRadiusOptions.length}
-          notchLabels={containerRadiusOptions.map((option, index) => ({
-            notchIndex: index,
-            label: option,
-            value: index,
-          }))}
+    <div>
+      <PanelSection>
+        <PanelSectionRow>
+          <ButtonItem
+            bottomSeparator="none"
+            onClick={() => {
+              serverAPI.routerHook.removeGlobalComponent("BrightnessBar");
+              serverAPI.routerHook.addGlobalComponent(
+                "BrightnessBar",
+                BrightnessBar
+              );
+            }}
+            layout={"below"}
+            description={
+              "You can use this button to reload the brightness bar if it is not working correctly."
+            }
+          >
+            Reload
+          </ButtonItem>
+        </PanelSectionRow>
+      </PanelSection>
+      <PanelSection title="Customization">
+        <ColorPickerRow
+          title="Bar Color"
+          color={barColor}
+          onSave={(color) => settings.save(Setting.BarColor, color)}
         />
-      </PanelSectionRow>
 
-      <PanelSectionRow>
-        <ToggleField
-          bottomSeparator="none"
-          label={"Container Shadow"}
-          checked={containerShadow}
-          onChange={(value) => {
-            settings.save(Setting.ContainerShadow, value);
-            setContainerShadow(value);
-          }}
+        <ColorPickerRow
+          title="Empty Bar Color"
+          color={emptyBarColor}
+          onSave={(color) => settings.save(Setting.EmptyBarColor, color)}
         />
-      </PanelSectionRow>
 
-      <PanelSectionRow>
-        <ButtonItem
-          bottomSeparator="none"
-          layout="below"
-          onClick={() => {
-            settings.resetToDefaults();
-            setBarColor(settings.defaults.barColor);
-            setEmptyBarColor(settings.defaults.emptyBarColor);
-            setContainerColor(settings.defaults.containerColor);
-            setIconColor(settings.defaults.iconColor);
-            setContainerRadius(settings.defaults.containerRadius);
-            setContainerShadow(settings.defaults.containerShadow);
-          }}
-        >
-          Reset to Defaults
-        </ButtonItem>
-      </PanelSectionRow>
-    </PanelSection>
+        <ColorPickerRow
+          title="Container Color"
+          color={containerColor}
+          onSave={(color) => settings.save(Setting.ContainerColor, color)}
+        />
+
+        <ColorPickerRow
+          title="Icon Color"
+          color={iconColor}
+          onSave={(color) => settings.save(Setting.IconColor, color)}
+        />
+
+        <PanelSectionRow>
+          <SliderField
+            bottomSeparator="none"
+            label={"Container Radius"}
+            min={0}
+            max={containerRadiusOptions.length - 1}
+            value={containerRadiusOptions.indexOf(containerRadius)}
+            onChange={(value) => {
+              const newRadius = containerRadiusOptions[value];
+              settings.save(Setting.ContainerRadius, newRadius);
+              setContainerRadius(newRadius);
+            }}
+            notchCount={containerRadiusOptions.length}
+            notchLabels={containerRadiusOptions.map((option, index) => ({
+              notchIndex: index,
+              label: option,
+              value: index,
+            }))}
+          />
+        </PanelSectionRow>
+
+        <PanelSectionRow>
+          <ToggleField
+            bottomSeparator="none"
+            label={"Container Shadow"}
+            checked={containerShadow}
+            onChange={(value) => {
+              settings.save(Setting.ContainerShadow, value);
+              setContainerShadow(value);
+            }}
+          />
+        </PanelSectionRow>
+
+        <PanelSectionRow>
+          <ButtonItem
+            bottomSeparator="none"
+            layout="below"
+            onClick={() => {
+              settings.resetToDefaults();
+              setBarColor(settings.defaults.barColor);
+              setEmptyBarColor(settings.defaults.emptyBarColor);
+              setContainerColor(settings.defaults.containerColor);
+              setIconColor(settings.defaults.iconColor);
+              setContainerRadius(settings.defaults.containerRadius);
+              setContainerShadow(settings.defaults.containerShadow);
+            }}
+          >
+            Reset to Defaults
+          </ButtonItem>
+        </PanelSectionRow>
+      </PanelSection>
+    </div>
   );
 };
 
