@@ -50,8 +50,9 @@ export const QAMContent: VFC = () => {
         <PanelSectionRow>
           <ButtonItem
             bottomSeparator="none"
-            onClick={() => {
+            onClick={async () => {
               serverAPI.routerHook.removeGlobalComponent("BrightnessBar");
+              await new Promise((resolve) => setTimeout(resolve, 1000));
               serverAPI.routerHook.addGlobalComponent(
                 "BrightnessBar",
                 BrightnessBar

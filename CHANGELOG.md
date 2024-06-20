@@ -1,3 +1,8 @@
+## 1.0.2
+
+- Fixed bar stops working after entering and leaving the game controller settings page.
+- Fixed reload button in quick access menu.
+
 ## 1.0.1
 
 - Fixed bar showing up when brightness automatically changes just when QAM or Steam button is pressed.

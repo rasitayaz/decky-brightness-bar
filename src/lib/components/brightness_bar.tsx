@@ -38,6 +38,7 @@ const UICompositionProxy: VFC = () => {
 };
 
 let triggeredAt = 0;
+let qamOrSteamPressedAt = 0;
 let controllingBrightness = false;
 let brightnessLock = false;
 
@@ -79,27 +80,59 @@ export const BrightnessBar: VFC = () => {
     };
   }, []);
 
+  useEffect(() => {}, []);
+
   useEffect(() => {
-    const registration =
+    const controllerStateListener = (changes: any[]) => {
+      for (const inputs of changes) {
+        const qamOrSteamPressed =
+          isPressed(ULUpperButtons.QAM, inputs.ulUpperButtons) ||
+          isPressed(ULButtons.Steam, inputs.ulButtons);
+
+        if (qamOrSteamPressed) qamOrSteamPressedAt = Date.now();
+
+        const threshold = 10000;
+
+        const up = inputs.sLeftStickY > threshold;
+        const down = inputs.sLeftStickY < -threshold;
+
+        controllingBrightness = qamOrSteamPressed && (up || down);
+      }
+    };
+
+    let controllerStateRegistration =
       window.SteamClient.Input.RegisterForControllerStateChanges(
-        (changes: any[]) => {
-          for (const inputs of changes) {
-            const qamOrSteamPressed =
-              isPressed(ULUpperButtons.QAM, inputs.ulUpperButtons) ||
-              isPressed(ULButtons.Steam, inputs.ulButtons);
+        controllerStateListener
+      );
 
-            const threshold = 10000;
-
-            const up = inputs.sLeftStickY > threshold;
-            const down = inputs.sLeftStickY < -threshold;
-
-            controllingBrightness = qamOrSteamPressed && (up || down);
+    const controllerCommandRegistration =
+      window.SteamClient.Input.RegisterForControllerCommandMessages(
+        (message: any) => {
+          if (
+            message.eAction !== 53 ||
+            Date.now() - qamOrSteamPressedAt < 1000
+          ) {
+            return;
           }
+
+          qamOrSteamPressedAt = Date.now();
+
+          /**
+           * QAM or Steam button was pressed, but controller state listener did not detect it.
+           * We need to re-register the controller state listener.
+           */
+
+          controllerStateRegistration.unregister();
+          controllerStateRegistration =
+            window.SteamClient.Input.RegisterForControllerStateChanges(
+              controllerStateListener
+            );
         }
       );
 
     return () => {
-      registration.unregister();
+      controllerStateRegistration.unregister();
+      controllerCommandRegistration.unregister();
     };
   }, []);
 
@@ -107,7 +140,7 @@ export const BrightnessBar: VFC = () => {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const registration =
+    const brightnessRegistration =
       window.SteamClient.System.Display.RegisterForBrightnessChanges(
         async (data: { flBrightness: number }) => {
           triggeredAt = Date.now();
@@ -134,7 +167,7 @@ export const BrightnessBar: VFC = () => {
       );
 
     return () => {
-      registration.unregister();
+      brightnessRegistration.unregister();
     };
   }, []);
 
