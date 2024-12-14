@@ -107,13 +107,8 @@ export const BrightnessBar: VFC = () => {
 
     const controllerCommandRegistration =
       window.SteamClient.Input.RegisterForControllerCommandMessages(
-        (message: any) => {
-          if (
-            message.eAction !== 53 ||
-            Date.now() - qamOrSteamPressedAt < 1000
-          ) {
-            return;
-          }
+        (_: any) => {
+          if (Date.now() - qamOrSteamPressedAt < 1000) return;
 
           qamOrSteamPressedAt = Date.now();
 

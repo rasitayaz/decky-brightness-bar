@@ -1,3 +1,7 @@
+## 1.0.3
+
+- Fixed "controller settings" page issue again.
+
 ## 1.0.2
 
 - Fixed bar stops working after entering and leaving the game controller settings page.
