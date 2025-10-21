@@ -1,6 +1,5 @@
 import { findModuleChild } from "decky-frontend-lib";
 import { VFC, useEffect, useState } from "react";
-import { ULButtons, ULUpperButtons, isPressed } from "../utils/buttons";
 import { appContext } from "../utils/context";
 import { Setting } from "../utils/settings";
 import { BrightnessIcon } from "./brightness_icon";
@@ -38,8 +37,7 @@ const UICompositionProxy: VFC = () => {
 };
 
 let triggeredAt = 0;
-let qamOrSteamPressedAt = 0;
-let controllingBrightness = false;
+let controllingBrightness = true; // Always show brightness bar when brightness changes
 let brightnessLock = false;
 
 export const BrightnessBar: VFC = () => {
@@ -77,57 +75,6 @@ export const BrightnessBar: VFC = () => {
 
     return () => {
       settings.unsubscribe("BrightnessBar");
-    };
-  }, []);
-
-  useEffect(() => {}, []);
-
-  useEffect(() => {
-    const controllerStateListener = (changes: any[]) => {
-      for (const inputs of changes) {
-        const qamOrSteamPressed =
-          isPressed(ULUpperButtons.QAM, inputs.ulUpperButtons) ||
-          isPressed(ULButtons.Steam, inputs.ulButtons);
-
-        if (qamOrSteamPressed) qamOrSteamPressedAt = Date.now();
-
-        const threshold = 10000;
-
-        const up = inputs.sLeftStickY > threshold;
-        const down = inputs.sLeftStickY < -threshold;
-
-        controllingBrightness = qamOrSteamPressed && (up || down);
-      }
-    };
-
-    let controllerStateRegistration =
-      window.SteamClient.Input.RegisterForControllerStateChanges(
-        controllerStateListener
-      );
-
-    const controllerCommandRegistration =
-      window.SteamClient.Input.RegisterForControllerCommandMessages(
-        (_: any) => {
-          if (Date.now() - qamOrSteamPressedAt < 1000) return;
-
-          qamOrSteamPressedAt = Date.now();
-
-          /**
-           * QAM or Steam button was pressed, but controller state listener did not detect it.
-           * We need to re-register the controller state listener.
-           */
-
-          controllerStateRegistration.unregister();
-          controllerStateRegistration =
-            window.SteamClient.Input.RegisterForControllerStateChanges(
-              controllerStateListener
-            );
-        }
-      );
-
-    return () => {
-      controllerStateRegistration.unregister();
-      controllerCommandRegistration.unregister();
     };
   }, []);
 
