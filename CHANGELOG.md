@@ -1,3 +1,7 @@
+## 1.0.4
+
+- Removed dependency to old 'RegisterForControllerStateChanges' and 'RegisterForControllerCommandMessages' APIs to make the plugin compatible with the latest SteamOS versions. (Thanks to @Lexodeus)
+
 ## 1.0.3
 
 - Fixed "controller settings" page issue again.
